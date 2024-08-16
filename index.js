@@ -85,22 +85,26 @@ async function run() {
 
     // handle filter 
     app.get('/products/filter', async (req, res) => {
-      const { brandNames, categoryNames, lowPrice, highPrice, sortField = 'price', sortOrder = 'asc', page = 0, size = 10 } = req.query;
+      const { brandNames, categoryNames, lowPrice, highPrice, page = 0, size = 10 } = req.query;
+      // set how to sort low to high or high to low
+      const sortField = req.query.sortField || 'price';
+      // set how to sort new or old
+      const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
       const matchStage = {};
 
-      // add brand name filter if provided
+      // add brand name filter
       if (brandNames) {
         const brandArray = brandNames.split(',').map(brand => brand.trim());
         matchStage.brandName = { $in: brandArray };
       }
 
-      // Add category filter if provided
+      // category filter
       if (categoryNames) {
         const categoryArray = categoryNames.split(',').map(category => category.trim());
         matchStage.category = { $in: categoryArray };
       }
 
-      // Add price range filter if provided
+      // price range filter
       if (lowPrice || highPrice) {
         matchStage.price = {};
         if (lowPrice) {
@@ -112,8 +116,11 @@ async function run() {
       }
       
       const products = await productsCollection.aggregate([
+        // build the logic for filter
         { $match: matchStage },
-        // { $sort: sortStage }, 
+        // sorting 
+        { $sort: { [sortField]: sortOrder } }, 
+        // pagination
         { $skip: parseInt(page) * parseInt(size) }, 
         { $limit: parseInt(size) },
       ]).toArray();
