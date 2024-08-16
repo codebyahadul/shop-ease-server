@@ -88,7 +88,7 @@ async function run() {
       const { brandNames, categoryNames, lowPrice, highPrice, sortField = 'price', sortOrder = 'asc', page = 0, size = 10 } = req.query;
       const matchStage = {};
 
-      // Add brand name filter if provided
+      // add brand name filter if provided
       if (brandNames) {
         const brandArray = brandNames.split(',').map(brand => brand.trim());
         matchStage.brandName = { $in: brandArray };
@@ -110,11 +110,12 @@ async function run() {
           matchStage.price.$lte = parseInt(highPrice, 10);
         }
       }
+      
       const products = await productsCollection.aggregate([
         { $match: matchStage },
         // { $sort: sortStage }, 
-        // { $skip: parseInt(page) * parseInt(size) }, 
-        // { $limit: parseInt(size) },
+        { $skip: parseInt(page) * parseInt(size) }, 
+        { $limit: parseInt(size) },
       ]).toArray();
 
       res.send(products);
