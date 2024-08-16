@@ -50,13 +50,11 @@ async function run() {
       return res.send(result);
     });
 
-    // Search products with sorting and pagination
+    // search products with pagination
     app.get('/search', async (req, res) => {
       const value = req.query.value;
-      // const page = parseInt(req.query.page) || 0;
-      // const size = parseInt(req.query.size) || 10;
-      // const sortField = req.query.sortField || 'productName';
-      // const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
+      const page = parseInt(req.query.page) || 0;
+      const size = parseInt(req.query.size) || 10;
 
       if (!value) {
         return res.status(400).send({ message: "Invalid search value" });
@@ -64,9 +62,8 @@ async function run() {
 
       const regex = new RegExp(value, 'i');
       const searchResult = await productsCollection.find({ productName: { $regex: regex } })
-        // .sort({ [sortField]: sortOrder })
-        // .skip(page * size)
-        // .limit(size)
+        .skip(page * size)
+        .limit(size)
         .toArray();
 
       const totalResults = await productsCollection.countDocuments({ productName: { $regex: regex } });
