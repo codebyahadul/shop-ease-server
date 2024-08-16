@@ -37,9 +37,12 @@ async function run() {
     })
     // pagination with sorting
     app.get('/products', async (req, res) => {
+      // set the page and size
       const page = parseInt(req.query.page) || 0;
       const size = parseInt(req.query.size) || 10;
+      // set how to sort low to high or high to low
       const sortField = req.query.sortField || 'price';
+      // set how to sort new or old
       const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
       const result = await productsCollection.find()
         .sort({ [sortField]: sortOrder })
@@ -53,8 +56,13 @@ async function run() {
     // search products with pagination
     app.get('/search', async (req, res) => {
       const value = req.query.value;
+      // set the page and size
       const page = parseInt(req.query.page) || 0;
       const size = parseInt(req.query.size) || 10;
+      // set how to sort low to high or high to low
+      const sortField = req.query.sortField || 'price';
+      // set how to sort new or old
+      const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
 
       if (!value) {
         return res.status(400).send({ message: "Invalid search value" });
@@ -62,6 +70,7 @@ async function run() {
 
       const regex = new RegExp(value, 'i');
       const searchResult = await productsCollection.find({ productName: { $regex: regex } })
+        .sort({ [sortField]: sortOrder })
         .skip(page * size)
         .limit(size)
         .toArray();
@@ -70,7 +79,7 @@ async function run() {
 
       res.send({
         searchResult,
-        // totalResults,
+        totalResults,
       });
     });
 
