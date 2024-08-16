@@ -1,14 +1,14 @@
 
 const express = require('express')
-require('dotenv').config()
 const cors = require('cors')
+require('dotenv').config()
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express()
 const port = process.env.PORT || 5000;
 
 
 const corsOptions = {
-  origin: ['http://localhost:5173'],
+  origin: ['http://localhost:5173', 'https://shop-ease0.web.app', 'https://shop-ease0.firebaseapp.com'],
   credentials: true,
   optionSuccessStatus: 200,
 }
