@@ -83,6 +83,42 @@ async function run() {
       });
     });
 
+    // handle filter 
+    app.get('/products/filter', async (req, res) => {
+      const { brandNames, categoryNames, lowPrice, highPrice, sortField = 'price', sortOrder = 'asc', page = 0, size = 10 } = req.query;
+      const matchStage = {};
+
+      // Add brand name filter if provided
+      if (brandNames) {
+        const brandArray = brandNames.split(',').map(brand => brand.trim());
+        matchStage.brandName = { $in: brandArray };
+      }
+
+      // Add category filter if provided
+      if (categoryNames) {
+        const categoryArray = categoryNames.split(',').map(category => category.trim());
+        matchStage.category = { $in: categoryArray };
+      }
+
+      // Add price range filter if provided
+      if (lowPrice || highPrice) {
+        matchStage.price = {};
+        if (lowPrice) {
+          matchStage.price.$gte = parseInt(lowPrice, 10);
+        }
+        if (highPrice) {
+          matchStage.price.$lte = parseInt(highPrice, 10);
+        }
+      }
+      const products = await productsCollection.aggregate([
+        { $match: matchStage },
+        // { $sort: sortStage }, 
+        // { $skip: parseInt(page) * parseInt(size) }, 
+        // { $limit: parseInt(size) },
+      ]).toArray();
+
+      res.send(products);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
